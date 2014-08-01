@@ -744,7 +744,7 @@ void setVector(struct Copter copter[], int copterID, int x, int y){
 	else if(dx >0 && dy >0) (copter[0]).vector = 8;
 }
 
-bool moveDestinationX(struct Copter copter[], int copterID, int y){
+bool moveDestinationX(struct Copter copter[], int copterID, int x){
 	int dx = (x - copter[copterID].rx);
 	const int xDiff = 50;
 	const int vxStopValue = 20;
@@ -766,7 +766,7 @@ bool moveDestinationX(struct Copter copter[], int copterID, int y){
 }
 
 bool moveDestinationY(struct Copter copter[], int copterID, int y){
-	const int dy = (y - copter[copterID].ry);
+	int dy = (y - copter[copterID].ry);
 	const int yDiff = 30;
 	const int vyStopValue = 20;
 	const int rollMaxValue = 10;
