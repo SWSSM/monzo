@@ -726,6 +726,7 @@ void moveMR(int val){
 }
 
 #define ABS(x) ((x)>0 ? (x) : -(x))
+#define ISPLUS(x) ((x)>0 ? 1 : 0)
 
 void setVector(struct Copter copter[], int copterID, int x, int y){
 	int dx = (x - copter[copterID].rx);
@@ -757,9 +758,9 @@ bool moveDestinationX(struct Copter copter[], int copterID, int x){
 		if( ABS(copter[copterID].vx) > vxStopValue )
 			copter[copterID].pitch = P_DEF;
 		else if( ABS(dx) > 200)
-			copter[copterID].pitch = P_DEF + pitchMaxValue;
+			copter[copterID].pitch = ISPLUS(dx) ? (P_DEF + pitchMaxValue) : (P_DEF - pitchMaxValue);
 		else if( ABS(dx) >= 0)
-			copter[copterID].pitch = P_DEF + pitchMaxValue / 2;
+			copter[copterID].pitch = ISPLUS(dx) ? (P_DEF + pitchMaxValue / 2) : (P_DEF - pitchMaxValue / 2);
 		else printf("moveDestination Exception\n");
 	}
 	return false;
@@ -776,11 +777,11 @@ bool moveDestinationY(struct Copter copter[], int copterID, int y){
 	else{
 		dy = (dy>0) ? (dy-yDiff) : (dy+yDiff);
 		if( ABS(copter[copterID].vy) > vyStopValue )
-			copter[copterID].pitch = R_DEF;
+			copter[copterID].roll = R_DEF;
 		else if( ABS(dy) > 50)
-			copter[copterID].pitch = R_DEF + rollMaxValue;
+			copter[copterID].roll = ISPLUS(dy) ? (R_DEF + rollMaxValue) : (R_DEF - rollMaxValue);
 		else if( ABS(dy) >= 0)
-			copter[copterID].pitch = R_DEF + rollMaxValue / 2;
+			copter[copterID].roll = ISPLUS(dy) ? (R_DEF + rollMaxValue / 2) : (R_DEF - rollMaxValue / 2);
 		else printf("moveDestination Exception\n");
 	}
 	return false;
