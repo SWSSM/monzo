@@ -15,7 +15,7 @@
 #define R_DEF 1506
 #define P_DEF 1514
 #define Th_DEF 1000
-#define FLYING_Th_DEF 1312
+#define FLYING_Th_DEF 1380
 #define HB 15
 
 /*
@@ -43,14 +43,14 @@
 /*** ***/
 #define COPTER_NUMBER   1
 
-#define ROLL_BREAK_POWER  2//Operate_Break()
-#define PITCH_BREAK_POWER 2 //Operate_Break()
-#define HOVERING_RATE 4     //Hovering()
+#define ROLL_BREAK_POWER  4//Operate_Break()
+#define PITCH_BREAK_POWER 4 //Operate_Break()
+#define HOVERING_RATE 3     //Hovering()
 
 #define DEFAULT_Z_POSITION 140
 #define MIN_SPEED 2
 #define BREAK_THRESHOLD 2
-#define MAX_BREAK_CNT   5
+#define MAX_BREAK_CNT   4
 
 struct Copter{
     int id;

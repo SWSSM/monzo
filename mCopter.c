@@ -17,6 +17,7 @@ void Return_into_Map(struct Copter* cop)
 	}
 }
 
+
 void Operate_Break(struct Copter* cop)
 {
 	int des_vector		= cop->vector;
@@ -30,9 +31,13 @@ void Operate_Break(struct Copter* cop)
 	
 	
 
+
 	if(des_vector != current_vector)//목표지점 방향과 콥터의 이동방향이 다름
 	{
 		printf("BREAK_TEST : %d\n",des_vector);
+		
+		if(abs(speed_X)<3) speed_X =0;
+		if(abs(speed_Y)<3) speed_Y =0;
 
 		switch(des_vector)
 		{
@@ -68,7 +73,7 @@ void Operate_Break(struct Copter* cop)
 				*/
 			       if(speed_Y>0)
 			       {
-					Roll_need = -speed_Y;		
+						Roll_need = -speed_Y;		
 			       }//Y축 방향이 반대
 			       if(speed_X<0)
 			       {
@@ -196,7 +201,7 @@ void Operate_Break(struct Copter* cop)
 		cop->Break_cnt_r =0;
 	}
 	
-	if(cop->Break_cnt_r>MAX_BREAK_CNT && cop->Break_cnt_r<(-MAX_BREAK_CNT))
+	if(cop->Break_cnt_r>MAX_BREAK_CNT || cop->Break_cnt_r<(-MAX_BREAK_CNT))
 	{
 		Roll_need =-speed_Y;
 		printf("Break of Break\n");
@@ -206,20 +211,20 @@ void Operate_Break(struct Copter* cop)
 	if(Pitch_need > 0){
 		if(cop->Break_cnt_p<=0) cop->Break_cnt_p =0;
 		cop->Break_cnt_p++;
-		if(cop->Break_cnt_p>BREAK_THRESHOLD) Pitch_need=0;	
-		if(cop->Break_cnt_p>MAX_BREAK_CNT) cop->Break_cnt_p=0;
+		if(cop->Break_cnt_p > BREAK_THRESHOLD) Pitch_need=0;	
+		if(cop->Break_cnt_p > MAX_BREAK_CNT) cop->Break_cnt_p=0;
 	}
 	else if(Pitch_need <0){
 		if(cop->Break_cnt_p>=0) cop->Break_cnt_p =0;
 		cop->Break_cnt_p--;
-		if(cop->Break_cnt_p<-BREAK_THRESHOLD) Pitch_need=0;
-		if(cop->Break_cnt_p<-MAX_BREAK_CNT) cop->Break_cnt_p=0;
+		if(cop->Break_cnt_p < -BREAK_THRESHOLD) Pitch_need=0;
+		if(cop->Break_cnt_p < -MAX_BREAK_CNT) cop->Break_cnt_p=0;
 	}
 	else
 	{
 		cop->Break_cnt_p =0;
 	}
-	if(cop->Break_cnt_p>MAX_BREAK_CNT && cop->Break_cnt_p<(-MAX_BREAK_CNT))
+	if(cop->Break_cnt_p>MAX_BREAK_CNT || cop->Break_cnt_p<(-MAX_BREAK_CNT))
 	{
 		Pitch_need =-speed_X;
 		printf("Break of Break\n");
@@ -227,20 +232,32 @@ void Operate_Break(struct Copter* cop)
 	}
 
 
+
 	
 	cop->roll_Break  = Roll_need	* ROLL_BREAK_POWER;
 	cop->pitch_Break = Pitch_need	* PITCH_BREAK_POWER;
 	
+	if(cop->roll_Break	<	 15) cop->roll_Break += 10;	
+	if(cop->roll_Break	>	-15) cop->roll_Break -= 10;	
+	if(cop->pitch_Break <	 15) cop->pitch_Break += 10;	
+	if(cop->pitch_Break >	-15) cop->pitch_Break -= 10;	
 
-	cop->roll += cop->roll_Break;
-	cop->pitch += cop->pitch_Break;
+
+	if(cop->roll_Break >	 90)	cop->roll_Break		=  90;
+	if(cop->roll_Break <	-90)	cop->roll_Break		= -90;
+	if(cop->pitch_Break >	 90)	cop->pitch_Break	=  90;
+	if(cop->pitch_Break <	-90)	cop->pitch_Break	= -90;
+
+	//cop->roll += cop->roll_Break;
+	//cop->pitch += cop->pitch_Break;
 	
 
-
+	cop->roll =	R_DEF	+ cop->roll_Break;
+	cop->pitch = P_DEF	+ cop->pitch_Break;
 	printf("SPEED_X/Y :  %d, %d\n", speed_X,speed_Y);
 	printf("Break ROLL / PITCH :  %d, %d\n", cop->roll_Break, cop->pitch_Break);
-}
 
+}
 
 int find_vector(struct Copter* cop, int d_x, int d_y, int d_Z)
 {
@@ -641,8 +658,8 @@ void Hovering(struct Copter* cop)
 	int addition_X = 0;
 	int addition_Y = 0;
 
-	if(abs(speed_X)<9) addition_X =2;
-	if(abs(speed_Y)<9) addition_Y =2;
+	if(abs(speed_X)<9) addition_X =1;
+	if(abs(speed_Y)<9) addition_Y =1;
 
 
 	int Roll_Rate  = ((-speed_Y)    * (HOVERING_RATE+addition_Y));
@@ -699,7 +716,7 @@ void Hovering(struct Copter* cop)
 	if(Roll_Rate > 100) Roll_Rate = 100;
 	if(Roll_Rate < -100) Roll_Rate = -100;
 	if(Pitch_Rate > 100) Pitch_Rate = 100;
-	if(Pitch_Rate > -100) Pitch_Rate = -100;
+	if(Pitch_Rate < -100) Pitch_Rate = -100;
 	
 	
 	cop->roll   = R_DEF + Roll_Rate;
@@ -768,21 +785,27 @@ bool moveDestinationX(struct Copter copter[], int copterID, int x){
 
 bool moveDestinationY(struct Copter copter[], int copterID, int y){
 	int dy = (y - copter[copterID].ry);
-	const int yDiff = 30;
+	const int yDiff = 5;
 	const int vyStopValue = 20;
 	const int rollMaxValue = 10;
+	int roll = R_DEF;
 
 	if( ABS(dy) < yDiff )
 		return true;
+	else if( copter[copterID].roll == R_DEF );
 	else{
 		dy = (dy>0) ? (dy-yDiff) : (dy+yDiff);
 		if( ABS(copter[copterID].vy) > vyStopValue )
-			copter[copterID].roll = R_DEF;
+			roll = R_DEF;
 		else if( ABS(dy) > 50)
-			copter[copterID].roll = ISPLUS(dy) ? (R_DEF + rollMaxValue) : (R_DEF - rollMaxValue);
+			roll = ISPLUS(dy) ? (R_DEF + rollMaxValue) : (R_DEF - rollMaxValue);
 		else if( ABS(dy) >= 0)
-			copter[copterID].roll = ISPLUS(dy) ? (R_DEF + rollMaxValue / 2) : (R_DEF - rollMaxValue / 2);
+			roll = ISPLUS(dy) ? (R_DEF + rollMaxValue / 2) : (R_DEF - rollMaxValue / 2);
 		else printf("moveDestination Exception\n");
+	}
+
+	if( ABS(roll - R_DEF) > ABS(copter[copterID].roll - R_DEF)) {
+		copter[copterID].roll = roll;
 	}
 	return false;
 }
@@ -808,11 +831,11 @@ void startFormation(struct Copter copter[]){
 	int i;
 	for(i=0; i<COPTER_NUMBER; i++){
 		if(copter[i].seen && copter[i].activate && copter[i].height ){
-			setVector(copter, i, 800, 500);
-			Hovering(&copter[i]);
-			moveDestinationX(copter, i, 800);
-			moveDestinationY(copter, i, 500);
-//			Operate_Break(&copter[i]);
+			setVector(copter, i, 1200, 600);
+//			Hovering(&copter[i]);
+			Operate_Break(&copter[i]);
+			moveDestinationX(copter, i, 1200);
+			moveDestinationY(copter, i, 600);
 			sendSignal_Copter(150);
 		}
 		else if(copter[i].seen && copter[i].activate){

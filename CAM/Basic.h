@@ -22,7 +22,7 @@ using namespace cv;
 
 #define CAMSIZE_X 1920
 #define CAMSIZE_Y 1080
-#define FRAME_SPEED	8
+#define FRAME_SPEED	4
 //캠 설정
 
 
