@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "mCopter.h"
-
 
 void Return_into_Map(struct Copter* cop)
 {
@@ -744,14 +744,14 @@ void setVector(struct Copter copter[], int copterID, int x, int y){
 	else if(dx >0 && dy >0) (copter[0]).vector = 8;
 }
 
-void moveDestination(struct Copter copter[], int copterID, int x, int y){
+bool moveDestinationX(struct Copter copter[], int copterID, int y){
 	int dx = (x - copter[copterID].rx);
-	int dy = (y - copter[copterID].ry);
-	const int xDiff = 50, yDiff = 30;
-	const int vxStopValue = 20, vyStopValue = 20;
-	const int pitchMaxValue = 16, rollMaxValue = 10;
+	const int xDiff = 50;
+	const int vxStopValue = 20;
+	const int pitchMaxValue = 16;
 
-	if( ABS(dx) < xDiff );
+	if( ABS(dx) < xDiff )
+		return true;
 	else{
 		dx = (dx>0) ? (dx-xDiff) : (dx+xDiff);
 		if( ABS(copter[copterID].vx) > vxStopValue )
@@ -762,8 +762,17 @@ void moveDestination(struct Copter copter[], int copterID, int x, int y){
 			copter[copterID].pitch = P_DEF + pitchMaxValue / 2;
 		else printf("moveDestination Exception\n");
 	}
-	
-	if( ABS(dy) < yDiff );
+	return false;
+}
+
+bool moveDestinationY(struct Copter copter[], int copterID, int y){
+	const int dy = (y - copter[copterID].ry);
+	const int yDiff = 30;
+	const int vyStopValue = 20;
+	const int rollMaxValue = 10;
+
+	if( ABS(dy) < yDiff )
+		return true;
 	else{
 		dy = (dy>0) ? (dy-yDiff) : (dy+yDiff);
 		if( ABS(copter[copterID].vy) > vyStopValue )
@@ -774,6 +783,7 @@ void moveDestination(struct Copter copter[], int copterID, int x, int y){
 			copter[copterID].pitch = R_DEF + rollMaxValue / 2;
 		else printf("moveDestination Exception\n");
 	}
+	return false;
 }
 
 void moveHeight(struct Copter copter[], int copterID){
@@ -797,9 +807,10 @@ void startFormation(struct Copter copter[]){
 	int i;
 	for(i=0; i<COPTER_NUMBER; i++){
 		if(copter[i].seen && copter[i].activate && copter[i].height ){
-			Hovering(&copter[i]);
-			moveDestination(copter, i, 800, 500);
 			setVector(copter, i, 800, 500);
+			Hovering(&copter[i]);
+			moveDestinationX(copter, i, 800);
+			moveDestinationY(copter, i, 500);
 //			Operate_Break(&copter[i]);
 			sendSignal_Copter(150);
 		}
